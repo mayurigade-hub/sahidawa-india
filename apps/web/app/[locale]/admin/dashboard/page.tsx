@@ -120,7 +120,10 @@ export default function AdminDashboard() {
     const fetchMedicines = useCallback(async () => {
         try {
             const res = await fetch(`${ADMIN_API_BASE}/medicines`, { headers: authHeaders() });
-            if (res.ok) setMedicines(await res.json());
+            if (res.ok) {
+                const data = await res.json();
+                setMedicines(data.medicines ?? []);
+            }
         } catch {
             /* silently fail, table will be empty */
         }
