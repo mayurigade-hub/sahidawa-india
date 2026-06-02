@@ -61,15 +61,16 @@ app.use(cookieParser());
 
 // ── CSRF Protection (double-submit cookie pattern) ─────────────────────────
 // csrf-csrf is recognized by CodeQL as a valid CSRF defense unlike custom header checks.
-const { 
-    doubleCsrfProtection, 
-    generateCsrfToken: generateToken // FIXED: Extract generateCsrfToken and alias it to generateToken
+const {
+    doubleCsrfProtection,
+    generateCsrfToken: generateToken, // FIXED: Extract generateCsrfToken and alias it to generateToken
 } = doubleCsrf({
     getSecret: () => process.env.CSRF_SECRET || "fallback-secret-change-in-production",
     getSessionIdentifier: (req: Request) => {
         return req.cookies?.access_token || "anonymous-session";
     },
-    cookieName: "__Host-psifi.x-csrf-token",
+    cookieName:
+        process.env.NODE_ENV === "production" ? "__Host-psifi.x-csrf-token" : "psifi.x-csrf-token",
     cookieOptions: {
         httpOnly: true,
         sameSite: "strict",
