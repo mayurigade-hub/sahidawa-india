@@ -33,7 +33,7 @@ describe("auth middleware", () => {
         await createAuthMiddleware(createClient(null) as never)(req, res, next as NextFunction);
 
         expect(res.statusCode).toBe(401);
-        expect(res.body).toEqual({ error: "Authorization bearer token is required" });
+        expect(res.body).toEqual({ error: "Unauthorized: Missing access token" });
         expect(next).not.toHaveBeenCalled();
     });
 
@@ -60,7 +60,7 @@ describe("auth middleware", () => {
         );
 
         expect(res.statusCode).toBe(401);
-        expect(res.body).toEqual({ error: "Invalid or expired authentication token" });
+        expect(res.body).toEqual({ error: "Unauthorized: Invalid or expired token" });
         expect(next).not.toHaveBeenCalled();
     });
 
