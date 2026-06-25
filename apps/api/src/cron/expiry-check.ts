@@ -7,40 +7,31 @@ export const initExpiryCron = () => {
     cron.schedule("0 0 * * *", async () => {
         logger.info("Running medicine expiry check...");
 
-        const alertWindows = [30, 14, 7];
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-        for (const days of alertWindows) {
-            const thresholdDate = new Date();
-            thresholdDate.setDate(thresholdDate.getDate() + days);
+        // Fetch medicines expiring within 30 days
+        const { data, error } = await supabase
+            .from("tracked_medicines")
+            .select("*")
+            .lte("expiry_date", thirtyDaysFromNow.toISOString())
+            .eq("notified_30d", false); // Only pick those not yet notified
 
-            const flagColumn = `notified_${days}d`;
-
-            // Fetch medicines expiring within 'days'
-            const { data, error } = await supabase
-                .from("tracked_medicines")
-                .select("*")
-                .lte("expiry_date", thresholdDate.toISOString())
-                .eq(flagColumn, false);
-
-            if (error) {
-                logger.error(`Error fetching ${days}d expiring medicines`, { error });
-                continue;
-            }
-
-            for (const medicine of data || []) {
-                // Here is where you would trigger the notification
-                // e.g., sendNotification(medicine.user_id, `Your medicine expires in ${days} days!`);
-
-                // Mark as notified to prevent duplicate alerts
-                await supabase
-                    .from("tracked_medicines")
-                    .update({ [flagColumn]: true })
-                    .eq("id", medicine.id);
-            }
-
-            logger.info(
-                `${days}d expiry check completed. ${data?.length || 0} medicines processed.`
-            );
+        if (error) {
+            logger.error("Error fetching expiring medicines", { error });
+            return;
         }
+
+        for (const medicine of data || []) {
+            // Here is where you would trigger the notification
+            // e.g., sendNotification(medicine.user_id, "Your medicine is expiring!");
+
+            // For now, mark as notified to prevent duplicate alerts
+            await supabase
+                .from("tracked_medicines")
+                .update({ notified_30d: true })
+                .eq("id", medicine.id);
+        }
+        logger.info(`Expiry check completed. ${data?.length || 0} medicines processed.`);
     });
 };
