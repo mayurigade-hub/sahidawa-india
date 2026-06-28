@@ -83,8 +83,8 @@ export function useMedicineVerification(
 
                 setShowResult(true);
             }
-      },
-        [setShowResult, recordScanHistory]
+    },
+        [setShowResult]
     );
 
     const handleVerify = useCallback(
@@ -114,12 +114,9 @@ export function useMedicineVerification(
             setVerifyResult(null);
             setVerifyError(null);
 
-           try {
+          try {
                 const result = await verifyMedicine(normalizedBatch, controller.signal);
                 if (!isMountedRef.current || controller.signal.aborted) return;
-                
-                // Yield control back to the browser animation frame thread before rendering matches
-                await new Promise((resolve) => setTimeout(resolve, 0));
                 await processVerificationResult(result, undefined);
             } catch (err) {
                 if (!isMountedRef.current || controller.signal.aborted) return;
