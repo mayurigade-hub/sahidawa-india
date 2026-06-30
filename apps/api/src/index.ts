@@ -35,6 +35,7 @@ if (
             "Detected a non-development NODE_ENV or a cloud platform environment variable."
     );
 }
+
 if (process.env.NODE_ENV === "production" && process.env.VERIFY_ENABLE_MOCKS === "true") {
     throw new Error("FATAL: VERIFY_ENABLE_MOCKS must not be enabled in production.");
 }
@@ -55,6 +56,10 @@ if (process.env.NODE_ENV !== "test") {
         // Initialize Redis Connection and warm cache
         await connectRedis();
         await warmCache();
+
+        // Load dynamic OCR synonyms
+        const { medicineNameNormalizer } = await import("./utils/medicineNameNormalizer.js");
+        await medicineNameNormalizer.loadFromDatabase();
 
         // Start cron jobs only after Redis is ready
         jobScheduler.start();

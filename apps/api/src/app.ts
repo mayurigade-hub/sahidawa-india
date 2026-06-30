@@ -16,7 +16,6 @@ import medicineSchedulesRouter from "./routes/medicineSchedules";
 import abhaRoutes from "./routes/abha";
 import trackingRouter from "./routes/tracking";
 import { initExpiryCron } from "./cron/expiry-check";
-
 // ── Environment Configuration ──────────────────────────────────────────────
 const rootEnvPath = path.resolve(__dirname, "../../../.env");
 dotenv.config({ path: rootEnvPath });
@@ -85,12 +84,12 @@ app.set("trust proxy", 1); // Trust first proxy (Nginx) — fixes req.ip for rat
 app.use(httpsRedirect);
 
 app.use(compression());
-app.use(cors(createCorsOptions()));
 initExpiryCron();
 // ── Global Middleware Configuration ───────────────────────────────────────
 app.use(cookieParser());
 
 // ── CSRF Protection (double-submit cookie pattern) ─────────────────────────
+app.use(cors(createCorsOptions()));
 // csrf-csrf is recognized by CodeQL as a valid CSRF defense unlike custom header checks.
 const ANON_SESSION_COOKIE = "csrf_anon_id";
 
@@ -155,7 +154,6 @@ app.use(
 );
 
 // Security: restrict CORS to known origins and allow credentials for secure cookies
-app.use(cors(createCorsOptions()));
 
 app.use(express.json({ limit: "1mb" }));
 

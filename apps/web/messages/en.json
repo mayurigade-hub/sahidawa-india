@@ -147,7 +147,11 @@
         "dosageForm": "Dosage Form",
         "composition": "Composition",
         "ScanBarcode": "Scan Barcode",
-        "offlineVerify": "Queue Scan"
+        "offlineVerify": "Queue Scan",
+
+        "batch_recalled_title": "This batch has been recalled",
+        "batch_recalled_body": "Please do not use this medicine. Return it to your pharmacy immediately.",
+        "save_to_abha": "Save to ABHA Record"
     },
     "BackToTopButton": {
         "label": "Back to top"
@@ -1180,5 +1184,27 @@
         "warningsLabel": "Warnings",
         "ariaStartRecording": "Start recording",
         "ariaStopRecording": "Stop recording"
+    },
+    "AdminSynonyms": {
+        "title": "OCR Synonyms",
+        "subtitle": "Manage OCR misreads and medicine synonyms.",
+        "refresh": "Refresh",
+        "addNew": "Add New Rule",
+        "originalTerm": "Original Term",
+        "normalizedTerm": "Normalized Term",
+        "originalPlaceholder": "e.g., asprin",
+        "normalizedPlaceholder": "e.g., aspirin",
+        "typeLabel": "Type",
+        "typeSynonym": "Synonym",
+        "typeMisread": "OCR Misread",
+        "addButton": "Add Rule",
+        "listTitle": "Existing Rules",
+        "emptyList": "No rules found.",
+        "actions": "Actions",
+        "delete": "Delete",
+        "confirmDelete": "Are you sure you want to delete this rule?",
+        "fetchError": "Failed to fetch rules.",
+        "addError": "Failed to add rule.",
+        "deleteError": "Failed to delete rule."
     }
 }
