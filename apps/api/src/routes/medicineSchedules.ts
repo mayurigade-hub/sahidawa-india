@@ -26,31 +26,35 @@ const invalidateUserSummaryCaches = async (userId: string) => {
         });
     }
 };
-const createScheduleSchema = z.object({
-    medicine_name: z.string().min(1, "Medicine name is required"),
-    dosage: z.string().min(1, "Dosage is required").default("1 tablet"),
-    frequency: z.number().int().positive("Frequency must be at least 1"),
-    times: z
-        .array(z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:MM format"))
-        .min(1, "At least one time is required"),
-    start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-    end_date: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
-        .nullable()
-        .optional(),
-    notes: z.string().optional(),
-    medicine_id: uuidSchema.nullable().optional(),
-});
+const createScheduleSchema = z
+    .object({
+        medicine_name: z.string().min(1, "Medicine name is required"),
+        dosage: z.string().min(1, "Dosage is required").default("1 tablet"),
+        frequency: z.number().int().positive("Frequency must be at least 1"),
+        times: z
+            .array(z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:MM format"))
+            .min(1, "At least one time is required"),
+        start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+        end_date: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
+            .nullable()
+            .optional(),
+        notes: z.string().optional(),
+        medicine_id: uuidSchema.nullable().optional(),
+    })
+    .strict();
 
 const updateScheduleSchema = createScheduleSchema.partial();
 
-const doseSchema = z.object({
-    log_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-    log_time: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:MM format"),
-    status: z.enum(["taken", "skipped"]),
-    taken_at: z.string().datetime().nullable().optional(),
-});
+const doseSchema = z
+    .object({
+        log_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+        log_time: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:MM format"),
+        status: z.enum(["taken", "skipped"]),
+        taken_at: z.string().datetime().nullable().optional(),
+    })
+    .strict();
 
 const statsSchema = z.object({
     from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
@@ -228,14 +232,19 @@ router.delete("/:id", requireAuth, async (req: AuthenticatedRequest, res: Respon
         return;
     }
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from("medicine_schedules")
             .delete()
             .eq("id", req.params.id)
-            .eq("user_id", req.user!.id);
+            .eq("user_id", req.user!.id)
+            .select("id");
 
         if (error) {
             res.status(500).json({ error: "Failed to delete schedule" });
+            return;
+        }
+        if (!data || data.length === 0) {
+            res.status(404).json({ error: "Schedule not found" });
             return;
         }
         await invalidateUserSummaryCaches(req.user!.id);

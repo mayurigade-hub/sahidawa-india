@@ -12,8 +12,12 @@ import { cacheMiddleware } from "../middleware/cache";
 import multer from "multer";
 import { buildOrConditions } from "../utils/db";
 import Papa from "papaparse";
+import { MAX_BULK_UPLOAD_ITEMS, MAX_BULK_UPLOAD_FILE_SIZE_BYTES } from "@sahidawa/shared";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: MAX_BULK_UPLOAD_FILE_SIZE_BYTES },
+});
 
 const router = Router();
 
@@ -1108,18 +1112,26 @@ router.post(
             // Strip UTF-8 BOM if present
             const fileContent = rawFileContent.replace(/^\uFEFF/, "");
 
-            const { data: pharmacy, error: pharmError } = await supabase
-                .from("pharmacies")
-                .select("id")
-                .eq("created_by", req.user.id)
-                .maybeSingle();
+            const pharmacyId = req.body.pharmacyId || req.query.pharmacyId;
 
-            if (pharmError || !pharmacy) {
+            let query = supabase.from("pharmacies").select("id").eq("created_by", req.user.id);
+
+            if (pharmacyId) {
+                query = query.eq("id", pharmacyId);
+            } else {
+                query = query.order("created_at", { ascending: false });
+            }
+
+            const { data: pharmacies, error: pharmError } = await query;
+
+            if (pharmError || !pharmacies || pharmacies.length === 0) {
                 res.status(404).json({
                     error: "No registered pharmacy found for this authorized user.",
                 });
                 return;
             }
+
+            const pharmacy = pharmacies[0];
 
             // Incremental parsing using the reusable helper (pharmacyId is already known)
             const { rowsToInsert, failedRows, totalRows } = await parseCsvIncremental(
@@ -1132,9 +1144,9 @@ router.post(
                 return;
             }
 
-            if (totalRows > 500) {
+            if (totalRows > MAX_BULK_UPLOAD_ITEMS) {
                 res.status(400).json({
-                    error: "Bulk upload exceeds the maximum limit of 500 items per request.",
+                    error: `Bulk upload exceeds the maximum limit of ${MAX_BULK_UPLOAD_ITEMS} items per request.`,
                 });
                 return;
             }
@@ -1361,9 +1373,9 @@ router.post(
                 return;
             }
 
-            if (totalRows > 500) {
+            if (totalRows > MAX_BULK_UPLOAD_ITEMS) {
                 res.status(400).json({
-                    error: "Bulk upload exceeds the maximum limit of 500 items per request.",
+                    error: `Bulk upload exceeds the maximum limit of ${MAX_BULK_UPLOAD_ITEMS} items per request.`,
                 });
                 return;
             }
