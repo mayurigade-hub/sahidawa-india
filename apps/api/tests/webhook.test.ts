@@ -1,7 +1,7 @@
 import request from "supertest";
 import crypto from "crypto";
-// Apne express app server entry instance ko standard mock directory pattern se import karo
-import app from "../app"; 
+// Import the express app server entry instance using standard mock directory pattern
+import app from "../app";
 import { redisClient } from "../utils/redis";
 
 jest.mock("../utils/redis", () => ({
