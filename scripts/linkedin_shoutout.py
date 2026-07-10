@@ -340,7 +340,7 @@ def generate_post_with_gemini(pr: dict, tier_display: str, tier_desc: str) -> st
     contributor_name = get_contributor_name(pr['author'])
     system_prompt = (
         "You are the Open-Source Maintainer for SahiDawa. Write a heartfelt, highly engaging LinkedIn post "
-        "thanking a contributor for their merged PR. Keep it within 3 short paragraphs.\n"
+        "thanking a contributor for their merged PR. Keep it within 3 short paragraphs. Use appropriate emojis (like 🎉, 🚀, 🔥) to match an enthusiastic tone.\n"
         "Strictly follow this structure:\n"
         "1. Enthusiastic opening thanking the contributor by name (no @github handles).\n"
         "2. Mention the PR Number and Title, and state they tackled the specified Task Tier.\n"
