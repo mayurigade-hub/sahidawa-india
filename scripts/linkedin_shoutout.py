@@ -305,13 +305,34 @@ def _static_fallback(pr: dict, tier_display: str) -> str:
 def generate_post_with_gemini(pr: dict, tier_display: str, tier_desc: str) -> str:
     gemini_api_key = get_env_or_exit("GEMINI_API_KEY")
     contributor_name = get_contributor_name(pr['author'])
-    system_prompt = "Write a heartfelt LinkedIn post thanking a contributor. Do not use @github handles. Use their first name."
-    user_prompt = f"Contributor: {contributor_name}\nPR Title: {pr['title']}\nLinkedIn: {pr['linkedin_url']}\n\nDiff: {pr.get('diff', '')[:10000]}"
+    system_prompt = (
+        "You are the Open-Source Maintainer for SahiDawa. Write a heartfelt, highly engaging LinkedIn post "
+        "thanking a contributor for their merged PR. Keep it within 3 short paragraphs.\n"
+        "Strictly follow this structure:\n"
+        "1. Enthusiastic opening thanking the contributor by name (no @github handles).\n"
+        "2. Mention the PR Number and Title, and state they tackled the specified Task Tier.\n"
+        "3. Explain briefly why the code diff is valuable to SahiDawa's mission.\n"
+        "4. Include 'Connect with [Name]: [LinkedIn URL]'.\n"
+        "5. End exactly with:\n"
+        "Want to contribute to India's open-source stack? Join the GSSoC 2026 wave on our repo:\n\n"
+        "Codebase: [Insert Codebase URL]\n"
+        "Merged PR: [Insert PR URL]"
+    )
+    user_prompt = (
+        f"Contributor: {contributor_name}\n"
+        f"PR Title: {pr['title']}\n"
+        f"PR Number: #{pr.get('number', 'N/A')}\n"
+        f"PR URL: {pr.get('url', 'N/A')}\n"
+        f"LinkedIn URL: {pr.get('linkedin_url', '')}\n"
+        f"Task Tier: {tier_display} ({tier_desc})\n"
+        f"Codebase URL: {PROJECT_GITHUB_URL}\n\n"
+        f"Git Diff Context:\n{pr.get('diff', '')[:5000]}"
+    )
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={gemini_api_key}"
     payload = {
         "systemInstruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"parts": [{"text": user_prompt}]}],
-        "generationConfig": {"temperature": 0.8, "maxOutputTokens": 800},
+        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 800},
     }
 
     import time
