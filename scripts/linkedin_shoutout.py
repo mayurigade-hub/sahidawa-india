@@ -477,23 +477,27 @@ def generate_and_upload_image(pr: dict, access_token: str, org_urn: str) -> str 
     print("🎨 Requesting engineering comic from Gemini API...")
     try:
         from google import genai
-        from google.genai import types
+        from google.genai.types import GenerateContentConfig, Modality
         
         client = genai.Client(api_key=api_key)
-        response = client.models.generate_images(
-            model='imagen-3.0-generate-001',
-            prompt=prompt,
-            config=types.GenerateImagesConfig(
-                number_of_images=1,
-                output_mime_type="image/png",
-                aspect_ratio="16:9"
+        response = client.models.generate_content(
+            model='gemini-3.1-flash-image',
+            contents=prompt,
+            config=GenerateContentConfig(
+                response_modalities=[Modality.IMAGE],
             )
         )
         
-        if response.generated_images:
+        image_bytes = None
+        for part in response.candidates[0].content.parts:
+            if part.inline_data:
+                image_bytes = part.inline_data.data
+                break
+                
+        if image_bytes:
             # Write binary image to /tmp
             with open(comic_path, "wb") as f:
-                f.write(response.generated_images[0].image.image_bytes)
+                f.write(image_bytes)
             print("✅ Gemini API generated comic successfully.")
         else:
             print("⚠️ No image returned from Gemini API.")
