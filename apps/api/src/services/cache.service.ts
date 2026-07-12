@@ -282,7 +282,11 @@ export async function flushInteractionCache(): Promise<number> {
 
         let chunk: string[] = [];
         for await (const key of scanIterator) {
-            chunk.push(key);
+            if (Array.isArray(key)) {
+                chunk.push(...key);
+            } else {
+                chunk.push(key as string);
+            }
             if (chunk.length >= CACHE_INVALIDATION_CHUNK_SIZE) {
                 await redisClient.del(chunk);
                 totalDeleted += chunk.length;
@@ -464,8 +468,13 @@ export async function invalidateCacheByPattern(pattern: string): Promise<string[
 
         let chunk: string[] = [];
         for await (const key of scanIterator) {
-            chunk.push(key);
-            keysToDelete.push(key);
+            if (Array.isArray(key)) {
+                chunk.push(...key);
+                keysToDelete.push(...key);
+            } else {
+                chunk.push(key as string);
+                keysToDelete.push(key as string);
+            }
 
             if (chunk.length >= CACHE_INVALIDATION_CHUNK_SIZE) {
                 await redisClient.del(chunk);
