@@ -38,26 +38,23 @@ export async function generateMetadata({
     (alternates.languages as Record<string, string>)["x-default"] = baseUrl;
 
     return {
-        title: "SahiDawa — Verify Your Medicine",
-        description:
-            "India's first open-source medicine verification platform. Scan, verify, and trust your medicines.",
+        title: "SahiDawa Open Health — Safety Infrastructure",
+        description: "Open-source medicine safety infrastructure. Scan, verify, and report.",
         manifest: "/manifest.json",
         icons: {
             icon: "/icons/icon-192.png",
             apple: "/icons/icon-192.png",
         },
         openGraph: {
-            title: "SahiDawa — Verify Your Medicine",
-            description:
-                "India's first open-source medicine verification platform. Scan, verify, and trust your medicines.",
+            title: "SahiDawa Open Health — Safety Infrastructure",
+            description: "Open-source medicine safety infrastructure. Scan, verify, and report.",
             url: baseUrl, // now uses the variable
             siteName: "SahiDawa",
         },
         twitter: {
             card: "summary_large_image",
-            title: "SahiDawa — Verify Your Medicine",
-            description:
-                "India's first open-source medicine verification platform. Scan, verify, and trust your medicines.",
+            title: "SahiDawa Open Health — Safety Infrastructure",
+            description: "Open-source medicine safety infrastructure. Scan, verify, and report.",
         },
         alternates,
     };

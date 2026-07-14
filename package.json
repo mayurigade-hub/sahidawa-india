@@ -2,7 +2,7 @@
     "name": "sahidawa-india",
     "version": "1.0.0",
     "private": true,
-    "description": "India's First Open-Source Citizen Medicine Verifier & Rural Health Bridge",
+    "description": "SahiDawa Open Health — Medicine safety infrastructure for Bharat",
     "engines": {
         "node": ">=22.0.0"
     },
