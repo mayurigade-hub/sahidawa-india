@@ -28,6 +28,16 @@ function createFormRequest(formData: FormData) {
     return request;
 }
 
+function createBrokenFormRequest(error: unknown) {
+    const request = new Request("http://localhost/api/voice/transcribe", {
+        method: "POST",
+    });
+    Object.defineProperty(request, "formData", {
+        value: jest.fn().mockRejectedValue(error),
+    });
+    return request;
+}
+
 describe("POST /api/voice/transcribe", () => {
     const originalFetch = global.fetch;
     const originalMlServiceUrl = process.env.ML_SERVICE_URL;
@@ -105,6 +115,18 @@ describe("POST /api/voice/transcribe", () => {
 
         expect(response.status).toBe(400);
         expect(data.error).toBe("Audio file is required.");
+    });
+
+    it("returns 400 when the multipart form data cannot be parsed", async () => {
+        global.fetch = jest.fn() as unknown as typeof fetch;
+        const request = createBrokenFormRequest(new TypeError("Could not parse content as FormData."));
+
+        const response = await POST(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.error).toBe("Invalid form data.");
+        expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it("returns 503 when ML_SERVICE_URL is missing", async () => {

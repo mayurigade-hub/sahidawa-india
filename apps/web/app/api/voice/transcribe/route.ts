@@ -27,7 +27,23 @@ export async function POST(req: Request) {
         );
     }
 
-    const formData = await req.formData();
+    let formData: FormData;
+    try {
+        formData = await req.formData();
+    } catch (error) {
+        structuredLog({
+            log_level: "warn",
+            route: ROUTE,
+            error: {
+                message: "Failed to parse multipart form data",
+                code: 400,
+                stack: error instanceof Error ? error.stack : undefined,
+            },
+            meta: { reason: "invalid_form_data" },
+        });
+        return NextResponse.json({ error: "Invalid form data." }, { status: 400 });
+    }
+
     const file = formData.get("file");
     const language = formData.get("language");
 
