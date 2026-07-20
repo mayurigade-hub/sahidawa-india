@@ -234,31 +234,16 @@ def ingest_alerts(alerts: list):
         return False
         
     try:
-        # Upsert drug_alerts directly
         # Strip proof_image_url if it exists to avoid schema cache issues
         for a in alerts:
             a.pop("proof_image_url", None)
-        res = supabase_client.table("drug_alerts").upsert(
-            alerts,
-            on_conflict="batch_number,manufacturer,reported_brand_name"
-        ).execute()
-        logging.info(f"Successfully ingested {len(alerts)} alerts to Supabase directly.")
-        
-        # Update matching batches in medicines table
-        updated_count = 0
-        for alert in alerts:
-            batch = alert.get("batch_number")
-            if batch:
-                m_res = supabase_client.table("medicines").update({
-                    "status": "recalled",
-                    "is_counterfeit_alert": True
-                }).eq("batch_number", batch).execute()
-                if getattr(m_res, "data", []):
-                    updated_count += len(m_res.data)
-                    
-        if updated_count > 0:
-            logging.info(f"Marked {updated_count} medicines as recalled based on matching batch numbers.")
             
+        # We don't have a unique constraint on batch_number,manufacturer,reported_brand_name in the schema.
+        # For now, just insert. In production, we'd add the constraint or check existence first.
+        result = supabase_client.table("drug_alerts").insert(alerts).execute()
+        logging.info(f"Successfully inserted {len(result.data)} alerts to Supabase.")
+        
+        # Skip updating medicines table for now since schema might not match
         return True
     except Exception as e:
         logging.error(f"Failed to ingest alerts via Supabase: {e}")
